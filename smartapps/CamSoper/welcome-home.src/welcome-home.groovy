@@ -26,63 +26,63 @@ definition(
 
 
 preferences {
-     //touch
-	section("Who are we greeting?") {
-		input "greetingList", "capability.presenceSensor", multiple: true, required: true
-	}
+    //touch
+    section("Who are we greeting?") {
+        input "greetingList", "capability.presenceSensor", multiple: true, required: true
+    }
     section("Which doors do they enter?") {
-		input "doorList", "capability.contactSensor", multiple: true, required: true
-	}
+        input "doorList", "capability.contactSensor", multiple: true, required: true
+    }
     section("Where are we speaking?") {
-		input "mySpeaker", "capability.musicPlayer", required: true
-	}
+        input "mySpeaker", "capability.musicPlayer", required: true
+    }
 }
 
 def installed() {
-	log.debug "Installed with settings: ${settings}"
-	initialize()
+    log.debug "Installed with settings: ${settings}"
+    initialize()
 }
 
 def updated() {
-	log.debug "Updated with settings: ${settings}"
+    log.debug "Updated with settings: ${settings}"
 
-	unsubscribe()
-	initialize()
+    unsubscribe()
+    initialize()
 }
 
 def initialize() {
-	log.debug("Initializing")
-	atomicState.newArrivals = []
+    log.debug("Initializing")
+    atomicState.newArrivals = []
     subscribe(greetingList, "presence.present", "presenceHandler")
     subscribe(doorList, "contact.open", "contactHandler")
 }
 
 def presenceHandler(evt) {
-	log.debug("There are currently $state.newArrivals.size items in the list.")
-	
+    log.debug("There are currently $state.newArrivals.size items in the list.")
+
     def theDevice = evt.device
-   	def newArrivals = atomicState.newArrivals
+    def newArrivals = atomicState.newArrivals
     def personsName = ""
     if(theDevice.label == null || theDevice.label == "") {
-    	personsName = theDevice.name
+        personsName = theDevice.name
     }
     else {
-    	personsName = theDevice.label
+        personsName = theDevice.label
     }
-    
-	log.debug("$personsName is home.")
-	if(!newArrivals.contains(personsName)) {
+
+    log.debug("$personsName is home.")
+    if(!newArrivals.contains(personsName)) {
         log.debug("Adding unique item.")
-       	newArrivals.add(personsName)
+        newArrivals.add(personsName)
         atomicState.newArrivals = newArrivals
-	}
-    
+    }
+
     log.debug("There are now $newArrivals.size items in the list.")
 }
 
 def contactHandler(evt) {
-	log.debug("The $evt.device.label sensor is open.")
-	def newArrivals = atomicState.newArrivals
+    log.debug("The $evt.device.label sensor is open.")
+    def newArrivals = atomicState.newArrivals
     def arrivalCount = newArrivals.size
     if(arrivalCount > 0){
     	log.debug("There are people to welcome.")
