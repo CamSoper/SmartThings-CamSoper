@@ -14,7 +14,6 @@
  *
  */
 
- //touch
 definition(
     name: "Welcome Home",
     namespace: "CamSoper",
@@ -27,6 +26,7 @@ definition(
 
 
 preferences {
+     //touch
 	section("Who are we greeting?") {
 		input "greetingList", "capability.presenceSensor", multiple: true, required: true
 	}
