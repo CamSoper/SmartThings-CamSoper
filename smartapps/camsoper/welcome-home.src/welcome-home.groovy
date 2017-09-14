@@ -14,6 +14,12 @@
  *
  */
 
+/* Changelog
+
+9/14/2007 - Added a changelog. Deleted a comment.
+
+*/
+
 definition(
     name: "Welcome Home",
     namespace: "CamSoper",
@@ -26,7 +32,6 @@ definition(
 
 
 preferences {
-    //touch
     section("Who are we greeting?") {
         input "greetingList", "capability.presenceSensor", multiple: true, required: true
     }
