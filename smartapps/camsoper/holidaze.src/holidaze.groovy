@@ -114,7 +114,6 @@ def rememberTheColors() {
     for(def b in bulbs) {
     	log.debug "Recording values - name: ${b.label}, deviceId: ${b.deviceNetworkId}, sat: ${b.currentSaturation}, hue: ${b.currentHue}, level: ${b.currentLevel}"
         def color = [hex: b.currentColor, saturation: b.currentSaturation, hue: b.currentHue]
-    	//colorInfo.add([deviceId: b.deviceNetworkId, saturation: b.currentSaturation, hue: b.currentHue, level: b.currentLevel])
     	colorInfo.add([deviceId: b.deviceNetworkId, color: color, level: b.currentLevel])
     }
     
@@ -127,15 +126,10 @@ def restoreTheColors(){
     def colorInfo = atomicState.colorInfo
     for(def b in bulbs) {
         def currColorInfo = colorInfo.find { ci -> ci.deviceId == b.deviceNetworkId }
-        //log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.sat}, hue: ${currColorInfo.hue}, level: ${currColorInfo.level}"
         
         log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.color.saturation}, hue: ${currColorInfo.color.hue}, level: ${currColorInfo.level}"
         b.setColor(currColorInfo.color)
         b.setLevel(currColorInfo.level)
-        
-        //b.setSaturation(currColorInfo.sat)
-        //b.setHue(currColorInfo.hue) 
-        //b.setLevel(currColorInfo.level) 
     }
 }
 
