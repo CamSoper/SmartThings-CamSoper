@@ -112,9 +112,8 @@ def rememberTheColors() {
     def colorInfo = []
     
     for(def b in bulbs) {
-    	log.debug "Recording values - name: ${b.label}, deviceId: ${b.deviceNetworkId}, sat: ${b.currentSaturation}, hue: ${b.currentHue}, level: ${b.currentLevel}"
-        def color = [hue: b.currentHue, saturation: b.currentSaturation]
-    	colorInfo.add([deviceId: b.deviceNetworkId, color: color, level: b.currentLevel])
+        log.debug "Recording values - name: ${b.label}, deviceId: ${b.deviceNetworkId}, sat: ${b.currentSaturation}, hue: ${b.currentHue}, level: ${b.currentLevel}"
+        colorInfo.add([deviceId: b.deviceNetworkId, hue: b.currentHue, saturation: b.currentSaturation, level: b.currentLevel])
     }
     
     
@@ -127,11 +126,13 @@ def restoreTheColors(){
     for(def b in bulbs) {
         def currColorInfo = colorInfo.find { ci -> ci.deviceId == b.deviceNetworkId }
         
-        log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.color.saturation}, hue: ${currColorInfo.color.hue}, level: ${currColorInfo.level}"
-        b.setHue(currColorInfo.color.hue)
-        b.setSaturation(currColorInfo.color.saturation)
-        //b.setColor(currColorInfo.color.hue, currColorInfo.color.saturation)
-        b.setLevel(currColorInfo.level)
+        log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.saturation}, hue: ${currColorInfo.hue}, level: ${currColorInfo.level}"
+        def colorMap = [hue:currColorInfo.hue.toInteger(),saturation:currColorInfo.saturation.toInteger(),level:currColorInfo.level.toInteger()]
+		b.setColor(colorMap)
+		//Apparently level isn't sent in setColor().
+        if(currColorInfo.level.toInteger() < 100) {
+        	b.setLevel(currColorInfo.level.toInteger())
+		}
     }
 }
 
