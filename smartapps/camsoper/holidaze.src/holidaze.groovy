@@ -26,13 +26,13 @@ definition(
 
 preferences {
     section("Hardware") {
-    	input "bulbs", "capability.colorControl", required: true, multiple: true, title: "RGBW Bulbs" 
+    		input "bulbs", "capability.colorControl", required: true, multiple: true, title: "RGBW Bulbs" 
 		input "virtualSwitch", "capability.switch", required: true, multiple: false, title: "Virtual Switch" 
 		input "physicalSwitch", "capability.switch", required: true, multiple: false, title: "Physical Switch" 
 	}
     section("Behaviors") {
 		input "powerCycle", "bool", required: true, multiple: false, title: "Power-cycle the bulbs after restoring color"
-        input "enabled", "bool", required: true, multiple: false, title: "Change bulbs to warm light when virtual switch turned on", defaultValue: true
+        	input "enabled", "bool", required: true, multiple: false, title: "Change bulbs to warm light when virtual switch turned on", defaultValue: true
 	}
 }
 
@@ -51,24 +51,24 @@ def updated() {
 
 def initialize() {
 	subscribe virtualSwitch, "switch.on", onVirtualOn
-    subscribe virtualSwitch, "switch.off", onVirtualOff
-    subscribe physicalSwitch, "switch.on", onPhysicalOn
-    subscribe physicalSwitch, "switch.off", onPhysicalOff
+	subscribe virtualSwitch, "switch.off", onVirtualOff
+	subscribe physicalSwitch, "switch.on", onPhysicalOn
+	subscribe physicalSwitch, "switch.off", onPhysicalOff
 }
 
 def onVirtualOn(evt) {
 	log.debug "Virtual switch on"
-    def hadToTurnOnPower = (physicalSwitch.currentSwitch == "off")
+	def hadToTurnOnPower = (physicalSwitch.currentSwitch == "off")
 	
 	if(hadToTurnOnPower) {
     	log.debug "Physical switch is off. Turning on."
         physicalSwitch.on()
     }
     else {
-		rememberTheColors()
+	rememberTheColors()
     }
     if(enabled) {
-		setWarmWhite()
+	setWarmWhite()
     }
     
     atomicState.hadToTurnOnPower = hadToTurnOnPower
@@ -90,54 +90,54 @@ def onVirtualOff(evt) {
 
 def powerCyclePhysicalSwitch() {
 	log.debug "Cycling physical switch"
-    physicalSwitch.off()
-    physicalSwitch.on()
+	physicalSwitch.off()
+	physicalSwitch.on()
 }
 
 def onPhysicalOn(evt) {
 	log.debug "Physical switch on"
-    if(virtualSwitch.currentSwitch == "off") {
-    	runIn(5, restoreTheColors)
-    }
+	if(virtualSwitch.currentSwitch == "off") {
+		runIn(5, restoreTheColors)
+	}
 }
 
 def onPhysicalOff(evt) {
 	log.debug "Physical switch off"
-    atomicState.lastPhysicalState = "off"
-    virtualSwitch.off()
+	atomicState.lastPhysicalState = "off"
+	virtualSwitch.off()
 }
 
 def rememberTheColors() {
-    log.debug "Storing color info."
-    def colorInfo = []
-    
-    for(def b in bulbs) {
-        log.debug "Recording values - name: ${b.label}, deviceId: ${b.deviceNetworkId}, sat: ${b.currentSaturation}, hue: ${b.currentHue}, level: ${b.currentLevel}"
-        colorInfo.add([deviceId: b.deviceNetworkId, hue: b.currentHue, saturation: b.currentSaturation, level: b.currentLevel])
-    }
-    
-    
-    atomicState.colorInfo = colorInfo
+	log.debug "Storing color info."
+	def colorInfo = []
+
+	for(def b in bulbs) {
+		log.debug "Recording values - name: ${b.label}, deviceId: ${b.deviceNetworkId}, sat: ${b.currentSaturation}, hue: ${b.currentHue}, level: ${b.currentLevel}"
+		colorInfo.add([deviceId: b.deviceNetworkId, hue: b.currentHue, saturation: b.currentSaturation, level: b.currentLevel])
+	}
+
+
+	atomicState.colorInfo = colorInfo
 }
 
 def restoreTheColors(){
-    log.debug "Retrieving color info"
-    def colorInfo = atomicState.colorInfo
-    for(def b in bulbs) {
-        def currColorInfo = colorInfo.find { ci -> ci.deviceId == b.deviceNetworkId }
-        
-        log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.saturation}, hue: ${currColorInfo.hue}, level: ${currColorInfo.level}"
-        def colorMap = [hue:currColorInfo.hue.toInteger(),saturation:currColorInfo.saturation.toInteger(),level:currColorInfo.level.toInteger()]
+	log.debug "Retrieving color info"
+	def colorInfo = atomicState.colorInfo
+	for(def b in bulbs) {
+		def currColorInfo = colorInfo.find { ci -> ci.deviceId == b.deviceNetworkId }
+
+		log.debug "Setting values - name: ${b.label}, deviceId: ${currColorInfo.deviceId}, sat: ${currColorInfo.saturation}, hue: ${currColorInfo.hue}, level: ${currColorInfo.level}"
+		def colorMap = [hue:currColorInfo.hue.toInteger(),saturation:currColorInfo.saturation.toInteger(),level:currColorInfo.level.toInteger()]
 		b.setColor(colorMap)
 		//Apparently level isn't sent in setColor().
-        if(currColorInfo.level.toInteger() < 100) {
-        	b.setLevel(currColorInfo.level.toInteger())
+		if(currColorInfo.level.toInteger() < 100) {
+			b.setLevel(currColorInfo.level.toInteger())
 		}
-    }
+	}
 }
 
 def setWarmWhite() {
-    log.debug "Setting color temp."
-    bulbs.setColorTemperature(2700)
-    bulbs.setLevel(100)
+	log.debug "Setting color temp."
+	bulbs.setColorTemperature(2700)
+	bulbs.setLevel(100)
 }
