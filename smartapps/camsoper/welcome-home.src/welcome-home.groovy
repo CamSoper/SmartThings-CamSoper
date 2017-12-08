@@ -16,7 +16,8 @@
 
 /* Changelog
 
-9/14/2007 - Added a changelog. Deleted a comment.
+12/7/2017 - Converted to non-atomic state, fixed a bug with single arrivals
+9/14/2017 - Added a changelog. Deleted a comment.
 
 */
 
@@ -66,7 +67,6 @@ def presenceHandler(evt) {
     log.debug("There are currently $state.newArrivals.size items in the list.")
 
     def theDevice = evt.device
-    def newArrivals = atomicState.newArrivals
     def personsName = ""
     if(theDevice.label == null || theDevice.label == "") {
         personsName = theDevice.name
@@ -76,25 +76,24 @@ def presenceHandler(evt) {
     }
 
     log.debug("$personsName is home.")
-    if(!newArrivals.contains(personsName)) {
-        log.debug("Adding unique item.")
-        newArrivals.add(personsName)
-        atomicState.newArrivals = newArrivals
+    if(!state.newArrivals.contains(personsName)) {
+        state.newArrivals.add(personsName)
+        log.debug("Added $personsName")
     }
 
-    log.debug("There are now $newArrivals.size items in the list.")
+    log.debug("There are now $state.newArrivals.size items in the list.")
 }
 
 def contactHandler(evt) {
     log.debug("The $evt.device.label sensor is open.")
-    def newArrivals = atomicState.newArrivals
-    def arrivalCount = newArrivals.size
+    def arrivalCount = state.newArrivals.size
     if(arrivalCount > 0){
     	log.debug("There are people to welcome.")
+        log.debug(state.newArrivals)
         def welcomeText = "Welcome home, "
-        if(arrivalCount > 1){
+        if(arrivalCount > 0){
             for(int i = 0; i < arrivalCount; i++){
-                welcomeText += newArrivals[i]
+                welcomeText += state.newArrivals[i]
                 if(i < arrivalCount - 2 && arrivalCount > 2){
                     welcomeText += ", " // Three or more and this is NOT the next-to-last one, add a comma
                 }
